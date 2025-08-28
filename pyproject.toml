@@ -20,7 +20,7 @@ authors = [
 ]
 readme = "README.md"
 dependencies = [
-    "pytz"
+    "playwright"
 ]
 
 [project.urls]
