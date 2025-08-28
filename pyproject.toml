@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["looker_metadata_extractor*"]
+
+[project]
+name = "looker_metadata_extractor"
+version = "1.0.0"
+description = "A tool for extracting metadata from Looker"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "Claire Childers", email = "clairechilders@oakland.edu" }
+]
+readme = "README.md"
+dependencies = [
+    "pytz"
+]
+
+[project.urls]
+Homepage = "https://github.com/CLDC-OU/LookerMetadataExtractor"
+Repository = "https://github.com/CLDC-OU/LookerMetadataExtractor.git"
