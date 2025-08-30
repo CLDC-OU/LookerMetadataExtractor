@@ -53,7 +53,7 @@ class ExtractorContext:
         context = self._get_context()
         if not context:
             raise ValueError("No browser context available")
-        context.on("response", response_handler)
+        page.on("response", response_handler)
         page.goto(url)
         self.current_page = page
         return page
