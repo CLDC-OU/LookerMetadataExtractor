@@ -7,7 +7,7 @@ from looker_metadata_extractor.nav.navigator import Navigator, NavigatorType
 from looker_metadata_extractor.nav.handshake_navigator import HandshakeNavigator
 from looker_metadata_extractor.extractor_context import ExtractorContext
 from looker_metadata_extractor.extract import Extract, QueryExtract, ExploreExtract, ModelExtract
-from looker_metadata_extractor.logger import logger
+from looker_metadata_extractor.utils.logger import logger
 
 
 class Extractor:

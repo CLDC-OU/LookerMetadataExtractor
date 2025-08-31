@@ -1,5 +1,5 @@
 from __future__ import annotations
-from looker_metadata_extractor.logger import logger
+from looker_metadata_extractor.utils.logger import logger
 from playwright.sync_api import Page
 from typing import Callable
 from enum import Enum

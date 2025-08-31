@@ -1,6 +1,6 @@
 from __future__ import annotations
 from looker_metadata_extractor.auth.auth_handler import AuthHandler
-from looker_metadata_extractor.logger import logger
+from looker_metadata_extractor.utils.logger import logger
 from playwright.sync_api import sync_playwright, BrowserContext, Page
 from typing import Callable
 

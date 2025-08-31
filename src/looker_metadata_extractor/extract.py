@@ -1,6 +1,6 @@
 from enum import Enum
 import json
-from looker_metadata_extractor.logger import logger
+from looker_metadata_extractor.utils.logger import logger
 
 class ExtractType(Enum):
     EXPLORE = "explore"

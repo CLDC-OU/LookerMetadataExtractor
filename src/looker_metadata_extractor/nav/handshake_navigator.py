@@ -4,7 +4,7 @@ import time
 import random
 
 from looker_metadata_extractor.nav.navigator import Navigator
-from looker_metadata_extractor.logger import logger
+from looker_metadata_extractor.utils.logger import logger
 from looker_metadata_extractor.extractor_context import ExtractorContext
 #from looker_metadata_extractor.auth.handshake_auth_handler import HandshakeAuthHandler
 from looker_metadata_extractor.auth.general_auth_handler import GeneralAuthHandler
