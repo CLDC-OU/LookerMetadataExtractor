@@ -98,5 +98,18 @@ class ExploreExtract(Extract):
 class ModelExtract(Extract):
     def __init__(self, **kwargs):
         super().__init__(ExtractType.MODEL, "/models")
+
+    def meets_conditions(self, response) -> bool:
+        return super().meets_conditions(response) and response.request.method == "GET"
+
+    @staticmethod
+    def json_meets_conditions(response_json: dict | list) -> bool:
+        return True
+
+    @staticmethod
+    def extract_data(response_json: dict | list) -> list[dict]:
+        if isinstance(response_json, dict):
+            return [response_json]
+        elif isinstance(response_json, list):
             return response_json
         return []
