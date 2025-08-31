@@ -14,7 +14,7 @@ class HandshakeNavigator(Navigator):
         cookie_url = kwargs.get('cookie_url')
         required_cookies = kwargs.get('required_cookies', [])
         if not cookie_url:
-            raise ValueError("Missing required environment variable `LOOKER_METADATA_EXTRACTOR_COOKIE_URL`")
+            raise ValueError("Missing required argument `cookie_url`")
         self.context = ExtractorContext(
             auth=GeneralAuthHandler(**kwargs), 
             cookie_url=cookie_url, 
