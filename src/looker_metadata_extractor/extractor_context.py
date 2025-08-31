@@ -50,8 +50,7 @@ class ExtractorContext:
     def open_page_with_response_handler(self, url: str, response_handler: Callable, reuse_context: bool = True):
         logger.info(f"Opening page with response handler: {url}")
         page = self._get_or_load_authenticated_page(reuse_context=reuse_context)
-        context = self._get_context()
-        if not context:
+        if not self._get_context():
             raise ValueError("No browser context available")
         page.on("response", response_handler)
         page.goto(url)
