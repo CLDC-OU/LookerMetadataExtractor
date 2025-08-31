@@ -18,6 +18,7 @@ class HandshakeNavigator(Navigator):
         run_headless = kwargs.get('headless', True)
         reuse_context = kwargs.get('reuse_context', True)
 
+        kwargs["successful_login_url"] = kwargs.get("successful_login_url", "**/edu")
         self.context = ExtractorContext(
             auth=GeneralAuthHandler(**kwargs), 
             cookie_url=cookie_url, 
