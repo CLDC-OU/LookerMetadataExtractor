@@ -1,9 +1,15 @@
-from .navigator import Navigator
-from ..logger import logger
-from ..extractor_context import ExtractorContext
+from __future__ import annotations
 from playwright.sync_api import Page
-from ..auth.handshake_authenticator import HandshakeAuthenticator
-import os
+import time
+import random
+
+from looker_metadata_extractor.nav.navigator import Navigator
+from looker_metadata_extractor.logger import logger
+from looker_metadata_extractor.extractor_context import ExtractorContext
+#from looker_metadata_extractor.auth.handshake_auth_handler import HandshakeAuthHandler
+from looker_metadata_extractor.auth.general_auth_handler import GeneralAuthHandler
+from looker_metadata_extractor.extract import Extract, ExtractType
+
 
 class HandshakeNavigator(Navigator):
     """
@@ -27,63 +33,75 @@ class HandshakeNavigator(Navigator):
             reuse_context=reuse_context
         )
     
-    def navigate_and_extract(self, url: str, extract_types: list[str], reuse_context: bool = True) -> Page:
+    def set_context(self, context: ExtractorContext):
+        self.context = context
+
+    def navigate_and_extract(self, url: str, extracts: list[Extract], reuse_context: bool = True) -> list[Extract]:
         logger.info(f"Navigating to: {url}")
-        self.queries = []
-        self.status = {}
-        for item in extract_types:
-            self.status[item] = "idle"
+        for item in extracts:
+            item.status = "idle"
 
         def handle_responses(response):
-            if "queries" in extract_types and "/queries" in response.url and response.request.method == "POST":
+            for extract in extracts:
                 try:
+                    if not extract.meets_conditions(response):
+                        continue
                     response_json = response.json()
-                    # Only accept responses that are a list of JSON objects with the "id" field. This is how all Handshake reports should be structured
-                    if not isinstance(response_json, list) or not all(
-                        isinstance(item, dict) and "id" in item.keys()
-                        for item in response_json if isinstance(item, dict)
-                    ):
-                        logger.info(f"Skipping response from {response.url}... not the expected report structure")
-                        return
-
+                    if not extract.json_meets_conditions(response_json):
+                        continue
+                    
                     logger.info(f"Intercepted query response from {response.url}")
+                    extract.status = "processing"
+                    data_items = extract.extract_data(response_json)
 
-                    # Remove the "data" field from the "data" object if it exists, as it includes way more data than we need
-                    if isinstance(response_json, list):
-                        for item in response_json:
-                            if isinstance(item, dict) and "data" in item and isinstance(item["data"], dict):
-                                item["data"].pop("data", None)
-                            self.queries.append(item)
-                    else:
-                        self.queries.append(response_json)
-                    self.status["queries"] = "complete"
+                    if data_items is None or len(data_items) == 0:
+                        logger.warning(f"No data items extracted from response {response.url}")
+                        return
+                    logger.info(f"Extracted {len(data_items)} items from response {response.url}")
+                    extract.status = "success"
+
+                    for item in data_items:
+                        extract.add_data_item(item)
+                    logger.info(f"Finished processing response {response.url}")
                 except Exception:
-                    logger.warning(f"Failed to parse JSON from {response.url}")
+                    logger.warning(f"Failed to handle query response from {response.url}")
                     logger.debug(f"Response headers: {response.headers}")
                     logger.debug(f"Response content: {response.text}")
                     logger.debug(f"Response status: {response.status}")
-                    self.status["queries"] = "failed"
-
-            if "explore" in extract_types:
-                pass
-            if "models" in extract_types:
-                pass
+                    extract.status = "failed"
+                    return
 
         page = self.context.open_page_with_response_handler(url, handle_responses, reuse_context=reuse_context)
         logger.info(f"Successfully navigated to: {url}")
 
         def wait_for_extractions_to_load():
-            # Wait for all status to be updated to "complete"
+            # Wait for all status to be updated to "success" or "failed"
             timeout = 30_000
             start_time = page.evaluate("performance.now()")
-            while not all(status == "complete" for status in self.status.values()) and (page.evaluate("performance.now()") - start_time) < timeout:
+            while not all(extract.status in ["success", "failed"] for extract in extracts) and (page.evaluate("performance.now()") - start_time) < timeout:
                 page.wait_for_timeout(100)
             if (page.evaluate("performance.now()") - start_time) >= timeout:
-                logger.warning(f"Timed out waiting for queries to load")
+                logger.warning(f"Timed out waiting for extractions to load")
         logger.info(f"Waiting for extractions to load...")
+        for item in extracts:
+            item.status = "waiting"
         wait_for_extractions_to_load()
-        if all(status == "complete" for status in self.status.values()):
-            logger.info(f"All extractions loaded successfully")
+        HandshakeNavigator._close_page_after_random_wait(page)
+
+        for item in extracts:
+            if item.status == "waiting":
+                item.status = "timed_out"
+
+        extract_statuses = {extract.type.value: extract.status for extract in extracts}
+        if all(item.status == "success" for item in extracts):
+            logger.info(f"All extractions loaded successfully. {extract_statuses}")
         else:
-            logger.warning(f"One or more extractions failed to load")
-        return page
+            logger.warning(f"One or more extractions failed to load. {extract_statuses}")
+        return extracts
+
+    @staticmethod
+    def _close_page_after_random_wait(page):
+        wait_time = random.randint(1000, 5000)
+        logger.info(f"Waiting for {wait_time}ms before closing page...")
+        page.wait_for_timeout(wait_time)
+        page.close()
