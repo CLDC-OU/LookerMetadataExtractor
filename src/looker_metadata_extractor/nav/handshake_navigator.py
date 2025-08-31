@@ -10,8 +10,8 @@ class HandshakeNavigator(Navigator):
     Navigator for Handshake (joinhandshake.com) Looker explores
     """
 
-    def __init__(self):
-        cookie_url = os.getenv('LOOKER_METADATA_EXTRACTOR_COOKIE_URL')
+    def __init__(self, **kwargs):
+        cookie_url = kwargs.get('cookie_url')
         if not cookie_url:
             raise ValueError("Missing required environment variable `LOOKER_METADATA_EXTRACTOR_COOKIE_URL`")
         self.context = ExtractorContext(
