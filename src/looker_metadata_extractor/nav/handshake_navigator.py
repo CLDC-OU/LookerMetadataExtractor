@@ -15,10 +15,15 @@ class HandshakeNavigator(Navigator):
         required_cookies = kwargs.get('required_cookies', [])
         if not cookie_url:
             raise ValueError("Missing required argument `cookie_url`")
+        run_headless = kwargs.get('headless', True)
+        reuse_context = kwargs.get('reuse_context', True)
+
         self.context = ExtractorContext(
             auth=GeneralAuthHandler(**kwargs), 
             cookie_url=cookie_url, 
             required_cookies=required_cookies,
+            run_headless=run_headless,
+            reuse_context=reuse_context
         )
     
     def navigate_and_extract(self, url: str, extract_types: list[str], reuse_context: bool = True) -> Page:
