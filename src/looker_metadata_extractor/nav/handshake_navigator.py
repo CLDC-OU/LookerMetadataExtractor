@@ -1,14 +1,11 @@
 from __future__ import annotations
-from playwright.sync_api import Page
-import time
 import random
 
 from looker_metadata_extractor.nav.navigator import Navigator
 from looker_metadata_extractor.utils.logger import logger
 from looker_metadata_extractor.nav.extractor_context import ExtractorContext
-#from looker_metadata_extractor.auth.handshake_auth_handler import HandshakeAuthHandler
 from looker_metadata_extractor.auth.general_auth_handler import GeneralAuthHandler
-from looker_metadata_extractor.extract.extract import Extract, ExtractType
+from looker_metadata_extractor.extract.extract import Extract
 
 
 class HandshakeNavigator(Navigator):

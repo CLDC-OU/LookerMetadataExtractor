@@ -1,3 +1,4 @@
+from __future__ import annotations
 from looker_metadata_extractor.auth.auth_handler import AuthHandler
 
 class NoAuthHandler(AuthHandler):
