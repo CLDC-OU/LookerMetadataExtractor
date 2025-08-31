@@ -63,7 +63,7 @@ class ExtractorContext:
         if context is None:
             context = self._new_context()
         if not self.is_authenticated():
-            self.auth.authenticate(self)
+            self.auth.authenticate(context)
         page = context.new_page()
         return page
 
