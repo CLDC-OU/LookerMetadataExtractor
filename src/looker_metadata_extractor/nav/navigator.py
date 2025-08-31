@@ -6,7 +6,7 @@ from enum import Enum
 
 from looker_metadata_extractor.extractor_context import ExtractorContext
 from looker_metadata_extractor.auth.auth_handler import AuthHandler
-from looker_metadata_extractor.extract import Extract, ExtractType
+from looker_metadata_extractor.extract.extract import Extract, ExtractType
 
 class NavigatorType(Enum):
     UNKNOWN = "unknown"

@@ -8,7 +8,7 @@ from looker_metadata_extractor.utils.logger import logger
 from looker_metadata_extractor.extractor_context import ExtractorContext
 #from looker_metadata_extractor.auth.handshake_auth_handler import HandshakeAuthHandler
 from looker_metadata_extractor.auth.general_auth_handler import GeneralAuthHandler
-from looker_metadata_extractor.extract import Extract, ExtractType
+from looker_metadata_extractor.extract.extract import Extract, ExtractType
 
 
 class HandshakeNavigator(Navigator):
