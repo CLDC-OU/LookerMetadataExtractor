@@ -66,9 +66,37 @@ class Extract:
 class QueryExtract(Extract):
     def __init__(self, **kwargs):
         super().__init__(ExtractType.QUERY, "queries")
+        self.query = kwargs.get("query_url", None)
+
+    def meets_conditions(self, response) -> bool:
+        return super().meets_conditions(response) and response.request.method == "POST"
+
+    @staticmethod
+    def json_meets_conditions(response_json: dict | list) -> bool:
+        return (
+            isinstance(response_json, list)
+            and all(isinstance(item, dict) and "id" in item.keys() for item in response_json)
+        )
+
+    @staticmethod
+    def extract_data(response_json: dict | list) -> list[dict]:
+        data_items = []
+
+        # Remove the "data" field from the "data" object if it exists, as it includes way more data than we need
+        if isinstance(response_json, list):
+            for item in response_json:
+                if isinstance(item, dict) and "data" in item and isinstance(item["data"], dict):
+                    item["data"].pop("data", None)
+                data_items.append(item)
+        else:
+            data_items.append(response_json)
+        return data_items
+
 class ExploreExtract(Extract):
     def __init__(self, **kwargs):
         super().__init__(ExtractType.EXPLORE, endpoint)
 class ModelExtract(Extract):
     def __init__(self, **kwargs):
         super().__init__(ExtractType.MODEL, "/models")
+            return response_json
+        return []
