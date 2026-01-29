@@ -8,18 +8,18 @@ from looker_metadata_extractor.utils.logger import logger
 from looker_metadata_extractor.nav.navigator import Navigator
 
 class Extractor:
-    def __init__(self, url: str, extracts: list[Extract], metadata_download_dir: str):
+    def __init__(self, url: str, extracts: list[Extract], metadata_download_directory: str):
         self.context = None
         self.extracts = extracts
         self.url = url
         self.extractor_name = url.split("/")[-1] if url else "default_extractor"
-        if metadata_download_dir:
-            self.metadata_download_dir = metadata_download_dir
+        if metadata_download_directory:
+            self.metadata_download_directory = metadata_download_directory
         else:
-            raise ValueError("Missing required argument `metadata_download_dir`")
+            raise ValueError("Missing required argument `metadata_download_directory`")
 
     def save_data(self):
-        full_download_directory = os.path.join(os.path.join(self.metadata_download_dir, self.extractor_name), self.extract_timestamp)
+        full_download_directory = os.path.join(os.path.join(self.metadata_download_directory, self.extractor_name), self.extract_timestamp)
         self._ensure_directory(full_download_directory)
         logger.info(f"[Extractor:{self.extractor_name}] Saving extracted data to {full_download_directory}...")
         for extract in self.extracts:

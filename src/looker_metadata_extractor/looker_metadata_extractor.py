@@ -34,7 +34,7 @@ class LookerMetadataExtractor:
             self.extractors.append(Extractor(
                 url=extractor_kwargs.get("url", None), 
                 extracts=extracts, 
-                metadata_download_dir=extractor_kwargs.get("metadata_download_dir", None)
+                metadata_download_directory=extractor_kwargs.get("metadata_download_directory", None)
             ))
 
         # Context
