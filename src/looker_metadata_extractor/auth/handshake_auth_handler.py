@@ -56,7 +56,7 @@ class HandshakeAuthHandler(AuthHandler):
 
         def _terminate_successfully_if_logged_in():
             if logged_in["value"] or self._url_matches_success(page.url):
-                logger.info("Detected successful login URL; terminating authentication successfully.")
+                logger.info("Detected successful login URL - terminating authentication successfully.")
                 try:
                     page.close()
                 except Exception:
@@ -70,14 +70,18 @@ class HandshakeAuthHandler(AuthHandler):
             return
         
         HandshakeAuthHandler._random_wait()
+        logger.info("Waiting for login button...")
         self._wait_for_selector_interruptible(page, self._login_button_selector, _terminate_successfully_if_logged_in)
         if _terminate_successfully_if_logged_in():
             return
         page.click(self._login_button_selector)
+        logger.info("Login button clicked")
         if _terminate_successfully_if_logged_in():
             return
+        
 
         # Insert username
+        logger.info("Waiting for username input...")
         self._wait_for_selector_interruptible(page, self._username_input_selector, _terminate_successfully_if_logged_in)
         if _terminate_successfully_if_logged_in():
             return
@@ -91,6 +95,7 @@ class HandshakeAuthHandler(AuthHandler):
             raise ValueError("Missing required environment variable `LOOKER_METADATA_EXTRACTOR_AUTH_USERNAME`")
         page.fill(self._username_input_selector, username)
         username = None
+        logger.info("Username input filled")
         if _terminate_successfully_if_logged_in():
             return
 
@@ -98,10 +103,12 @@ class HandshakeAuthHandler(AuthHandler):
         if _terminate_successfully_if_logged_in():
             return
         page.press(self._username_input_selector, "Enter")
+        logger.info("Username submitted")
         if _terminate_successfully_if_logged_in():
             return
 
         # Wait for the (second) login button to appear because Handshake is silly and requires an extra click (for no reason)
+        logger.info("Waiting for second login button...")
         self._wait_for_selector_interruptible(page, self._login_2_button_selector, _terminate_successfully_if_logged_in)
         if _terminate_successfully_if_logged_in():
             return
@@ -109,10 +116,12 @@ class HandshakeAuthHandler(AuthHandler):
         if _terminate_successfully_if_logged_in():
             return
         page.click(self._login_2_button_selector)
+        logger.info("Second login button clicked")
         if _terminate_successfully_if_logged_in():
             return
 
         # Insert password
+        logger.info("Waiting for password input...")
         self._wait_for_selector_interruptible(page, self._password_input_selector, _terminate_successfully_if_logged_in)
         if _terminate_successfully_if_logged_in():
             return
@@ -126,22 +135,24 @@ class HandshakeAuthHandler(AuthHandler):
             raise ValueError("Missing required environment variable `LOOKER_METADATA_EXTRACTOR_AUTH_PASSWORD`")
         page.fill(self._password_input_selector, password)
         password = None
+        logger.info("Password input filled")
         if _terminate_successfully_if_logged_in():
             return
         HandshakeAuthHandler._random_wait()
         if _terminate_successfully_if_logged_in():
             return
         page.press(self._password_input_selector, "Enter")
+        logger.info("Password submitted")
         if _terminate_successfully_if_logged_in():
             return
 
+        logger.info("Waiting for successful login...")
         self._wait_for_url_interruptible(page, "**/edu", _terminate_successfully_if_logged_in)
         if _terminate_successfully_if_logged_in():
             return
 
-        logger.info(f"Successfully logged in to Handshake")
+        logger.warning("Failed to complete login successfully - closing page")
         page.close()
-        HandshakeAuthHandler._random_wait(500, 1500)
 
     @staticmethod
     def _random_wait(min_time: int = 100, max_time: int = 1000):
