@@ -75,6 +75,7 @@ pip install looker_metadata_extractor @ git+https://github.com/CLDC-OU/LookerMet
 ## Configuration
 
 - `type`: The type of "navigator" to use. Currently only supports `handshake`
+- (optional) `auth_handler`: The type of authentication handler to use. Defaults to `general` for manual authentication
 - `auth_url`: The URL to the authentication/login page
 - `successful_login_url`: The URL that indicates a successful login (i.e., the page you get sent to after logging in)
 - `cookie_url`: The URL cookies are stored under
