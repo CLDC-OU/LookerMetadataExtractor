@@ -68,11 +68,6 @@ class HandshakeAuthHandler(AuthHandler):
         page.goto(f"{self.auth_url}")
         if _terminate_successfully_if_logged_in():
             return
-
-        # Wait for page to load
-        self._wait_for_load_state_interruptible(page, "networkidle", _terminate_successfully_if_logged_in)
-        if _terminate_successfully_if_logged_in():
-            return
         
         HandshakeAuthHandler._random_wait()
         self._wait_for_selector_interruptible(page, self._login_button_selector, _terminate_successfully_if_logged_in)
