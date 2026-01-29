@@ -2,6 +2,14 @@
 
 Intercepts and extracts metadata from saved Looker queries
 
+## Quick Use
+
+Install the package with the desired `<VERSION>` (e.g., `1.0.0` - check the GitHub releases for the latest stable version):
+
+```
+pip install looker_metadata_extractor @ git+https://github.com/CLDC-OU/LookerMetadataExtractor.git@<VERSION>
+```
+
 ## Setup & Use
 
 1. Set up a virtual environment
@@ -11,7 +19,12 @@ Intercepts and extracts metadata from saved Looker queries
     .venv/bin/activate
     ```
 
-2. Install the required dependencies
+2. Install the package, either with pip or the following `requirements.txt`
+
+    ```
+    looker_metadata_extractor @ git+https://github.com/CLDC-OU/LookerMetadataExtractor.git@<VERSION>
+    pyyaml
+    ```
 
     ```
     pip install -r requirements.txt
@@ -23,7 +36,7 @@ Intercepts and extracts metadata from saved Looker queries
     playwright install
     ```
 
-4. Set up environmental variables in .env
+4. (not required) Set up environmental variables in .env - only required for certain auth handlers
 
     ```
     LOOKER_METADATA_EXTRACTOR_AUTH_USERNAME="username"
@@ -53,6 +66,11 @@ Intercepts and extracts metadata from saved Looker queries
     ```python
     extractor.save_extracted_data()
     ```
+
+## Environment Variables
+
+- `LOOKER_METADATA_EXTRACTOR_AUTH_USERNAME`: The username for authentication/login (only required for certain auth handlers)
+- `LOOKER_METADATA_EXTRACTOR_AUTH_PASSWORD`: The password for authentication/login (only required for certain auth handlers)
 
 ## Configuration
 
