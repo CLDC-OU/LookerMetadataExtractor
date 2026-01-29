@@ -1,8 +1,9 @@
 from __future__ import annotations
+from fnmatch import fnmatch
 import os
 import time
 import random
-from playwright.sync_api import BrowserContext
+from playwright.sync_api import BrowserContext, TimeoutError as PlaywrightTimeoutError
 
 from looker_metadata_extractor.auth.auth_handler import AuthHandler
 from looker_metadata_extractor.utils.logger import logger
@@ -18,6 +19,9 @@ class HandshakeAuthHandler(AuthHandler):
     _username_input_selector = 'input[name="identifier"]'
     _password_input_selector = 'input[name="password"]'
     _successful_login_url = "**/edu"
+    
+    _poll_interval_ms = 250
+    _max_wait_time_ms = 60_000
 
     def __init__(self, **kwargs):
         auth_url = kwargs.get('auth_url')
@@ -34,38 +38,107 @@ class HandshakeAuthHandler(AuthHandler):
         logger.info(f"Logging in to Handshake... ({self.auth_url})")
 
         page = context.new_page()
+        logged_in = {"value": False}
+        
+        def _on_frame_navigated(frame):
+            try:
+                if frame == page.main_frame and self._url_matches_success(page.url):
+                    logged_in["value"] = True
+            except Exception:
+                pass
+
+        page.on("framenavigated", _on_frame_navigated)
+
+        def _terminate_successfully_if_logged_in():
+            if logged_in["value"] or self._url_matches_success(page.url):
+                logger.info("Detected successful login URL; terminating authentication successfully.")
+                try:
+                    page.close()
+                except Exception:
+                    pass
+                HandshakeAuthHandler._random_wait(500, 1500)
+                return True
+            return False
+
         page.goto(f"{self.auth_url}")
-        page.wait_for_selector(self._login_button_selector)
+        if _terminate_successfully_if_logged_in():
+            return
+
+        # Wait for page to load
+        self._wait_for_load_state_interruptible(page, "networkidle", _terminate_successfully_if_logged_in)
+        if _terminate_successfully_if_logged_in():
+            return
+        
+        HandshakeAuthHandler._random_wait()
+        self._wait_for_selector_interruptible(page, self._login_button_selector, _terminate_successfully_if_logged_in)
+        if _terminate_successfully_if_logged_in():
+            return
         page.click(self._login_button_selector)
+        if _terminate_successfully_if_logged_in():
+            return
 
         # Insert username
-        page.wait_for_selector(self._username_input_selector)
+        self._wait_for_selector_interruptible(page, self._username_input_selector, _terminate_successfully_if_logged_in)
+        if _terminate_successfully_if_logged_in():
+            return
+        
         HandshakeAuthHandler._random_wait(1000, 2000)
+        if _terminate_successfully_if_logged_in():
+            return
+        
         username = os.getenv('LOOKER_METADATA_EXTRACTOR_AUTH_USERNAME')
         if username is None:
             raise ValueError("Missing required environment variable `LOOKER_METADATA_EXTRACTOR_AUTH_USERNAME`")
         page.fill(self._username_input_selector, username)
         username = None
+        if _terminate_successfully_if_logged_in():
+            return
+
         HandshakeAuthHandler._random_wait()
+        if _terminate_successfully_if_logged_in():
+            return
         page.press(self._username_input_selector, "Enter")
+        if _terminate_successfully_if_logged_in():
+            return
 
         # Wait for the (second) login button to appear because Handshake is silly and requires an extra click (for no reason)
-        page.wait_for_selector(self._login_2_button_selector)
+        self._wait_for_selector_interruptible(page, self._login_2_button_selector, _terminate_successfully_if_logged_in)
+        if _terminate_successfully_if_logged_in():
+            return
         HandshakeAuthHandler._random_wait()
+        if _terminate_successfully_if_logged_in():
+            return
         page.click(self._login_2_button_selector)
+        if _terminate_successfully_if_logged_in():
+            return
 
         # Insert password
-        page.wait_for_selector(self._password_input_selector)
+        self._wait_for_selector_interruptible(page, self._password_input_selector, _terminate_successfully_if_logged_in)
+        if _terminate_successfully_if_logged_in():
+            return
+        
         HandshakeAuthHandler._random_wait(1000, 2000)
+        if _terminate_successfully_if_logged_in():
+            return
+
         password = os.getenv('LOOKER_METADATA_EXTRACTOR_AUTH_PASSWORD')
         if password is None:
             raise ValueError("Missing required environment variable `LOOKER_METADATA_EXTRACTOR_AUTH_PASSWORD`")
         page.fill(self._password_input_selector, password)
         password = None
+        if _terminate_successfully_if_logged_in():
+            return
         HandshakeAuthHandler._random_wait()
+        if _terminate_successfully_if_logged_in():
+            return
         page.press(self._password_input_selector, "Enter")
+        if _terminate_successfully_if_logged_in():
+            return
 
-        page.wait_for_url("**/edu")
+        self._wait_for_url_interruptible(page, "**/edu", _terminate_successfully_if_logged_in)
+        if _terminate_successfully_if_logged_in():
+            return
+
         logger.info(f"Successfully logged in to Handshake")
         page.close()
         HandshakeAuthHandler._random_wait(500, 1500)
@@ -75,3 +148,46 @@ class HandshakeAuthHandler(AuthHandler):
             wait_time = random.randint(min_time, max_time)
             logger.info(f"Waiting for {wait_time}ms...")
             time.sleep(wait_time / 1000)
+
+    def _url_matches_success(self, current_url: str) -> bool:
+        pattern = self._successful_login_url or ""
+        if "*" in pattern or "?" in pattern:
+            glob_pattern = pattern.replace("**", "*")
+            return fnmatch(current_url, glob_pattern)
+        return current_url.startswith(pattern)
+
+    def _wait_for_selector_interruptible(self, page, selector: str, should_stop) -> None:
+        deadline = time.time() + (self._max_wait_time_ms / 1000)
+        while True:
+            if should_stop():
+                return
+            try:
+                page.wait_for_selector(selector, timeout=self._poll_interval_ms)
+                return
+            except PlaywrightTimeoutError:
+                if time.time() >= deadline:
+                    raise
+
+    def _wait_for_load_state_interruptible(self, page, state: str, should_stop) -> None:
+        deadline = time.time() + (self._max_wait_time_ms / 1000)
+        while True:
+            if should_stop():
+                return
+            try:
+                page.wait_for_load_state(state, timeout=self._poll_interval_ms)
+                return
+            except PlaywrightTimeoutError:
+                if time.time() >= deadline:
+                    raise
+
+    def _wait_for_url_interruptible(self, page, url_pattern: str, should_stop) -> None:
+        deadline = time.time() + (self._max_wait_time_ms / 1000)
+        while True:
+            if should_stop():
+                return
+            try:
+                page.wait_for_url(url_pattern, timeout=self._poll_interval_ms)
+                return
+            except PlaywrightTimeoutError:
+                if time.time() >= deadline:
+                    raise
