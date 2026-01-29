@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.4 (2026-01-28)
+
+```diff
+    | Fixed broken page wait in Handshake auth handler
+```
+
 ## 1.0.3 (2026-01-28)
 
 ```diff
