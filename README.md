@@ -24,6 +24,7 @@ pip install looker_metadata_extractor @ git+https://github.com/CLDC-OU/LookerMet
     ```
     looker_metadata_extractor @ git+https://github.com/CLDC-OU/LookerMetadataExtractor.git@<VERSION>
     pyyaml
+    python-dotenv
     ```
 
     ```
@@ -48,6 +49,9 @@ pip install looker_metadata_extractor @ git+https://github.com/CLDC-OU/LookerMet
     ```python
     from looker_metadata_extractor import LookerMetadataExtractor
     import yaml
+    # Optional: load environment variables from .env file for auth handlers that require them
+    from dotenv import load_dotenv
+    load_dotenv()
 
     with open("config.yaml") as f:
         config = yaml.safe_load(f)
@@ -75,14 +79,26 @@ pip install looker_metadata_extractor @ git+https://github.com/CLDC-OU/LookerMet
 ## Configuration
 
 - `type`: The type of "navigator" to use. Currently only supports `handshake`
-- (optional) `auth_handler`: The type of authentication handler to use. Defaults to `general` for manual authentication
+- (optional) `auth_handler`: The type of authentication handler to use. Defaults to `general` for manual authentication. See [Authentication Handlers](#authentication-handlers)
 - `auth_url`: The URL to the authentication/login page
-- `successful_login_url`: The URL that indicates a successful login (i.e., the page you get sent to after logging in)
+- `successful_login_url`: The URL that indicates a successful login (i.e., the page you get sent to after logging in). Can include wildcards (`*` and `**`) for matching (e.g., `**/edu` for Handshake)
 - `cookie_url`: The URL cookies are stored under
 - `required_cookies`: A list of cookies required for the application to consider the session as being authenticated (typically a session id or similar. Anything that doesn't exist when not authenticated and does exist when authenticated)
 - `headless`: Whether to run the browser in headless mode (headless = no UI)
 - `reuse_context`: Whether to reuse the browser context (saves context between sessions in a `user_data` directory)
 - `extractors`: A list of extractors to use for metadata extraction. See [Extractors](#extractors)
+
+## Authentication Handlers
+
+Authentication handlers (other than `none`) will only authenticate if the `successful_login_url` is not detected when navigating to the `auth_url`. This allows for reuse of authenticated sessions when using `reuse_context`.
+
+(dev note): Authentication handlers do not check the cookies themselves to determine if authentication is valid - this is only done by the navigator.
+
+The authentication handler determines how the extractor will authenticate with the Looker instance. The available authentication handler types include:
+
+- `general`: A general authentication handler that requires manual login by the user
+- `handshake`: An authentication handler for Handshake that automates the login process using provided credentials from environment variables - use with caution and ensure that credentials are stored securely
+- `none`: No authentication handler. Assumes that the user is already authenticated. This includes context reuse with `reuse_context` enabled (after an initial manual login)
 
 ## Extractors
 
