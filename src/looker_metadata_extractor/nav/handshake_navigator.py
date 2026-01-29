@@ -39,7 +39,8 @@ class HandshakeNavigator(Navigator):
             cookie_url=cookie_url, 
             required_cookies=required_cookies,
             run_headless=run_headless,
-            reuse_context=reuse_context
+            reuse_context=reuse_context,
+            user_data_directory=kwargs.get("user_data_directory", "./user_data")
         )
 
     def set_context(self, context: ExtractorContext):

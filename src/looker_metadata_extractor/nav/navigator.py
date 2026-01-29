@@ -23,7 +23,7 @@ class Navigator:
     """
 
     def __init__(self, **kwargs):
-        self.context = ExtractorContext(AuthHandler(**kwargs), '', [], True, False)
+        self.context = ExtractorContext(AuthHandler(**kwargs), '', [], True, False, kwargs.get("user_data_directory", "./user_data"))
 
     def set_context(self, context: ExtractorContext):
         self.context = context

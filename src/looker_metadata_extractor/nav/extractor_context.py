@@ -10,7 +10,7 @@ class ExtractorContext:
     Holds the context for the extractor, including authentication and browser instance
     """
 
-    def __init__(self, auth: AuthHandler, cookie_url: str, required_cookies: list[str], run_headless: bool, reuse_context: bool):
+    def __init__(self, auth: AuthHandler, cookie_url: str, required_cookies: list[str], run_headless: bool, reuse_context: bool, user_data_directory: str):
         self.auth = auth
         self.cookie_url = cookie_url
         self.required_cookies = required_cookies
@@ -18,6 +18,7 @@ class ExtractorContext:
         self.run_headless = run_headless
         self.reuse_context = reuse_context
         self.context = None
+        self.user_data_directory = user_data_directory
 
     def _get_context(self) -> BrowserContext | None:
         if self.context:
@@ -28,7 +29,7 @@ class ExtractorContext:
         if not self.context:
             logger.info("Starting new browser instance...")
             if self.reuse_context:
-                self.context = sync_playwright().start().chromium.launch_persistent_context(user_data_dir="./user_data", headless=self.run_headless)
+                self.context = sync_playwright().start().chromium.launch_persistent_context(user_data_dir=self.user_data_directory, headless=self.run_headless)
             else:
                 logger.info("Creating new browser context...")
                 browser = sync_playwright().start().chromium.launch(headless=self.run_headless)

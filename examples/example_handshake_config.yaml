@@ -6,6 +6,7 @@ required_cookies:
   - session_id
 headless: False
 reuse_context: True
+user_data_directory: /path/to/user/data/dir
 extractors:
   - url: https://school.joinhandshake.com/edu/analytics/reports/12345
     metadata_download_directory: /path/to/download
