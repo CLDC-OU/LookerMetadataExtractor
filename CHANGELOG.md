@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.3 (2026-01-28)
+
+```diff
++   | Added configurable user data directory
++   | Added automatic termination to Handshake auth handler after detecting successful login URL at any point during navigation
+```
+
 ## 1.0.2 (2026-01-28)
 
 ```diff
