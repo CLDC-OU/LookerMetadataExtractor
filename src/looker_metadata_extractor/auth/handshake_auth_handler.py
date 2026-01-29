@@ -28,6 +28,11 @@ class HandshakeAuthHandler(AuthHandler):
         if not isinstance(auth_url, str):
             raise ValueError("Missing or invalid required argument `auth_url`")
         self.auth_url = auth_url
+        
+        successful_login_url = kwargs.get('successful_login_url')
+        if not isinstance(successful_login_url, str):
+            raise ValueError("Missing or invalid required argument `successful_login_url`")
+        self._successful_login_url = successful_login_url
 
     def authenticate(self, context: BrowserContext):
         if not os.getenv('LOOKER_METADATA_EXTRACTOR_AUTH_USERNAME'):
