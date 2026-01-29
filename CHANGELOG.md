@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.2 (2026-01-28)
+
+```diff
++   | Added configuration support for auth handler types
+```
+
 ## 1.0.1 (2026-01-28)
 
 ```diff
