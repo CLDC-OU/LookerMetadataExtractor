@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.1 (2026-01-28)
+
+```diff
+    | Changed name of argument `metadata_download_dir` to `metadata_download_directory`
++   | Added instructions for installing the package via pip in the README
+```
+
 ## 1.0.0 (2025-08-30)
 
 ```diff

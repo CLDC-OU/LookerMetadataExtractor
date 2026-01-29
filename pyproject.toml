@@ -11,7 +11,7 @@ include = ["looker_metadata_extractor*"]
 
 [project]
 name = "looker_metadata_extractor"
-version = "1.0.0"
+version = "1.0.1"
 description = "A tool for extracting metadata from Looker"
 license = "MIT"
 license-files = ["LICENSE"]
