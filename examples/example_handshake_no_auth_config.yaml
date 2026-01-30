@@ -1,15 +1,11 @@
 type: handshake
-auth_url: https://school.joinhandshake.com/login
-successful_login_url: "**/edu"
-cookie_url: https://school.joinhandshake.com
-required_cookies:
-  - session_id
-headless: False
-reuse_context: True
-user_data_directory: /path/to/user/data/dir
+auth:
+  handler: none
+  cookie_url: https://school.joinhandshake.com
+  required_cookies:
+    - session_id
 extractors:
   - url: https://school.joinhandshake.com/edu/analytics/reports/12345
-    metadata_download_directory: /path/to/download
     extracts:
       - type: query
       - type: explore
@@ -17,6 +13,5 @@ extractors:
         explore_name: students
       - type: model
   - url: https://school.joinhandshake.com/edu/analytics/reports/67890
-    metadata_download_directory: /path/to/download
     extracts:
       - type: query

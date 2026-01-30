@@ -1,0 +1,26 @@
+type: handshake
+headless: False
+reuse_context: True
+timeout: 30000
+user_data_directory: /path/to/user/data/dir
+auth:
+  handler: general
+  auth_url: https://school.joinhandshake.com/login
+  successful_login_url: "**/edu"
+  cookie_url: https://school.joinhandshake.com
+  required_cookies:
+    - session_id
+extractors:
+  - url: https://school.joinhandshake.com/edu/analytics/reports/12345
+    custom_timeout: 60000
+    metadata_download_directory: /path/to/download
+    extracts:
+      - type: query
+      - type: explore
+        prefix: "generated_handshake_production::"
+        explore_name: students
+      - type: model
+  - url: https://school.joinhandshake.com/edu/analytics/reports/67890
+    metadata_download_directory: /path/to/download
+    extracts:
+      - type: query
