@@ -133,7 +133,10 @@ class HandshakeAuthHandler(AuthHandler):
         password = os.getenv('LOOKER_METADATA_EXTRACTOR_AUTH_PASSWORD')
         if password is None:
             raise ValueError("Missing required environment variable `LOOKER_METADATA_EXTRACTOR_AUTH_PASSWORD`")
-        page.fill(self._password_input_selector, password)
+        
+        # NOTE: Assumes password locator is focused. Since the input is of type password, we can't interact with it normally so we use hardcoded navigation and keyboard typing
+        logger.info("Filling password input...")
+        page.keyboard.type(password, delay=44)
         password = None
         logger.info("Password input filled")
         if _terminate_successfully_if_logged_in():
@@ -141,7 +144,9 @@ class HandshakeAuthHandler(AuthHandler):
         HandshakeAuthHandler._random_wait()
         if _terminate_successfully_if_logged_in():
             return
-        page.press(self._password_input_selector, "Enter")
+
+        logger.info("Submitting password...")
+        page.keyboard.press("Enter")
         logger.info("Password submitted")
         if _terminate_successfully_if_logged_in():
             return
