@@ -8,7 +8,7 @@ from looker_metadata_extractor.utils.logger import logger
 from looker_metadata_extractor.nav.navigator import Navigator
 
 class Extractor:
-    def __init__(self, url: str, extracts: list[Extract], metadata_download_directory: str):
+    def __init__(self, url: str, extracts: list[Extract], metadata_download_directory: str, custom_timeout: int | None = None):
         self.context = None
         self.extracts = extracts
         self.url = url
@@ -17,6 +17,7 @@ class Extractor:
             self.metadata_download_directory = metadata_download_directory
         else:
             raise ValueError("Missing required argument `metadata_download_directory`")
+        self.custom_timeout = custom_timeout
 
     def save_data(self):
         full_download_directory = os.path.join(os.path.join(self.metadata_download_directory, self.extractor_name), self.extract_timestamp)
@@ -37,7 +38,7 @@ class Extractor:
         if context:
             navigator.set_context(context)
         logger.info(f"[Extractor:{self.extractor_name}] Starting extraction...")
-        navigator.navigate_and_extract(self.url, self.extracts, False if context else True)
+        navigator.navigate_and_extract(self.url, self.extracts, custom_timeout=self.custom_timeout)
 
     def _ensure_directory(self, full_download_directory: str):
         if not os.path.exists(full_download_directory):

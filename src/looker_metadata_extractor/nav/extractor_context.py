@@ -50,19 +50,19 @@ class ExtractorContext:
         cookies = context.cookies(self.cookie_url)
         return all(cookie in cookies for cookie in self.required_cookies)
 
-    def open_page(self, url: str, reuse_context: bool = True) -> Page:
+    def open_page(self, url: str) -> Page:
+        page = self._get_or_load_authenticated_page()
         logger.info(f"Opening page: {url}")
-        page = self._get_or_load_authenticated_page(reuse_context=reuse_context)
         page.goto(url)
         self.current_page = page
         return page
 
-    def open_page_with_response_handler(self, url: str, response_handler: Callable, reuse_context: bool = True):
-        logger.info(f"Opening page with response handler: {url}")
-        page = self._get_or_load_authenticated_page(reuse_context=reuse_context)
+    def open_page_with_response_handler(self, url: str, response_handler: Callable):
+        page = self._get_or_load_authenticated_page()
         if not self._get_context():
             raise ValueError("No browser context available")
         page.on("response", response_handler)
+        logger.info(f"Opening page with response handler: {url}")
         page.goto(url)
         self.current_page = page
         return page
@@ -76,14 +76,14 @@ class ExtractorContext:
         page = context.new_page()
         return page
 
-    def _get_or_load_authenticated_page(self, reuse_context: bool = True) -> Page:
-        if not reuse_context:
+    def _get_or_load_authenticated_page(self) -> Page:
+        if not self.reuse_context:
             if self.current_page:
                 self.current_page.close()
                 self.current_page = None
             self._new_context()
 
-        if reuse_context and self.current_page:
+        if self.reuse_context and self.current_page:
             return self.current_page
         else:
             return self._get_authenticated_page()

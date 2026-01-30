@@ -4,6 +4,7 @@ from looker_metadata_extractor.nav.navigator import Navigator, NavigatorType
 from looker_metadata_extractor.nav.handshake_navigator import HandshakeNavigator
 from looker_metadata_extractor.extract.extract import QueryExtract, ExploreExtract, ModelExtract
 from looker_metadata_extractor.extract.extractor import Extractor
+from looker_metadata_extractor.utils.logger import logger
 
 
 class LookerMetadataExtractor:
@@ -16,7 +17,8 @@ class LookerMetadataExtractor:
         self.type = NavigatorType.from_string(kwargs.get("type", "unknown"))
         self.reuse_context = kwargs.get("reuse_context", True)
 
-        # Factory
+        # Load extractors
+        index = 0
         for extractor_kwargs in kwargs.get("extractors", []):
             extracts = []
             for extract in extractor_kwargs.get("extracts", []):
@@ -29,15 +31,22 @@ class LookerMetadataExtractor:
                 else:
                     raise ValueError(f"Unknown extract type: {extract.get('type')}")
 
-            # TODO: Add checking for empty extracts and other edge validation
+            def _is_valid_extractor(extractor_kwargs: dict) -> bool:
+                return len(extracts) > 0 and "url" in extractor_kwargs and "metadata_download_directory" in extractor_kwargs
 
-            self.extractors.append(Extractor(
-                url=extractor_kwargs.get("url", None), 
-                extracts=extracts, 
-                metadata_download_directory=extractor_kwargs.get("metadata_download_directory", None)
-            ))
+            if _is_valid_extractor(extractor_kwargs):
+                self.extractors.append(Extractor(
+                    url=extractor_kwargs.get("url"),
+                    extracts=extracts, 
+                    metadata_download_directory=extractor_kwargs.get("metadata_download_directory"),
+                    custom_timeout=extractor_kwargs.get("custom_timeout", None)
+                ))
+                logger.info(f"Loaded extractor {index} for URL: {extractor_kwargs.get('url')}")
+            else:
+                logger.warning(f"Skipping extractor {index} (missing required fields or no extracts defined)")
+            index += 1
 
-        # Context
+        # Initialize navigator
         if self.type == NavigatorType.HANDSHAKE:
             self.navigator = HandshakeNavigator(**kwargs)
         else:
@@ -45,7 +54,7 @@ class LookerMetadataExtractor:
 
     def extract_metadata(self):
         for extractor in self.extractors:
-            extractor.extract(self.navigator, None if self.reuse_context else self.navigator.context) # NOTE: consider resetting context if not reuse_context. This does nothing right now
+            extractor.extract(self.navigator, context=self.navigator.context if self.navigator.context.context else None)
 
     def save_extracted_data(self):
         for extractor in self.extractors:

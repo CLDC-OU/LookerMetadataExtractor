@@ -33,20 +33,29 @@ class HandshakeNavigator(Navigator):
             auth_handler = NoAuthHandler(**kwargs)
         else:
             auth_handler = GeneralAuthHandler(**kwargs)
+        user_data_directory = kwargs.get("user_data_directory", "./user_data")
 
-        self.context = ExtractorContext(
+        self._context = ExtractorContext(
             auth=auth_handler, 
             cookie_url=cookie_url, 
             required_cookies=required_cookies,
             run_headless=run_headless,
             reuse_context=reuse_context,
-            user_data_directory=kwargs.get("user_data_directory", "./user_data")
+            user_data_directory=user_data_directory
         )
+        self._timeout = kwargs.get("timeout", HandshakeNavigator.DEFAULT_TIMEOUT_MS)
+
+    @property
+    def context(self) -> ExtractorContext:
+        return self._context
+    @property
+    def timeout(self) -> int:
+        return self._timeout
 
     def set_context(self, context: ExtractorContext):
-        self.context = context
+        self._context = context
 
-    def navigate_and_extract(self, url: str, extracts: list[Extract], reuse_context: bool = True) -> list[Extract]:
+    def navigate_and_extract(self, url: str, extracts: list[Extract], custom_timeout: int | None = None) -> list[Extract]:
         logger.info(f"Navigating to: {url}")
         for item in extracts:
             item.status = "idle"
@@ -81,15 +90,16 @@ class HandshakeNavigator(Navigator):
                     extract.status = "failed"
                     return
 
-        page = self.context.open_page_with_response_handler(url, handle_responses, reuse_context=reuse_context)
+        page = self.context.open_page_with_response_handler(url, handle_responses)
+        
         logger.info(f"Successfully navigated to: {url}")
 
         def wait_for_extractions_to_load():
             # Wait for all status to be updated to "success" or "failed"
-            timeout = 30_000
+            timeout = custom_timeout if custom_timeout is not None else self.timeout
             start_time = page.evaluate("performance.now()")
             while not all(extract.status in ["success", "failed"] for extract in extracts) and (page.evaluate("performance.now()") - start_time) < timeout:
-                page.wait_for_timeout(100)
+                page.wait_for_timeout(HandshakeNavigator.POLLING_INTERVAL_MS)
             if (page.evaluate("performance.now()") - start_time) >= timeout:
                 logger.warning(f"Timed out waiting for extractions to load")
         logger.info(f"Waiting for extractions to load...")
