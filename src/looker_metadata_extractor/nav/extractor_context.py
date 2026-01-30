@@ -1,5 +1,6 @@
 from __future__ import annotations
 from playwright.sync_api import sync_playwright, BrowserContext, Page
+from playwright_stealth import Stealth
 from typing import Callable
 
 from looker_metadata_extractor.auth.auth_handler import AuthHandler
@@ -29,10 +30,10 @@ class ExtractorContext:
         if not self.context:
             logger.info("Starting new browser instance...")
             if self.reuse_context:
-                self.context = sync_playwright().start().chromium.launch_persistent_context(user_data_dir=self.user_data_directory, headless=self.run_headless)
+                self.context = Stealth().use_sync(sync_playwright()).manager.start().chromium.launch_persistent_context(user_data_dir=self.user_data_directory, headless=self.run_headless)
             else:
+                browser = Stealth().use_sync(sync_playwright()).manager.start().chromium.launch(headless=self.run_headless)
                 logger.info("Creating new browser context...")
-                browser = sync_playwright().start().chromium.launch(headless=self.run_headless)
                 self.context = browser.new_context()
         return self.context
 
