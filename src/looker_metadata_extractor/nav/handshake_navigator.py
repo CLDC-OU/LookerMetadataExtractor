@@ -17,22 +17,32 @@ class HandshakeNavigator(Navigator):
     """
 
     def __init__(self, **kwargs):
-        cookie_url = kwargs.get('cookie_url')
-        required_cookies = kwargs.get('required_cookies', [])
+        # Auth config
+        auth_kwargs = kwargs.get("auth", {})
+        auth_config = {}
+        if not auth_kwargs:
+            raise ValueError("Missing required argument `auth`")
+        cookie_url = auth_kwargs.get("cookie_url")
         if not cookie_url:
-            raise ValueError("Missing required argument `cookie_url`")
+            raise ValueError("Missing required argument `cookie_url` in `auth`")
+        required_cookies = auth_kwargs.get("required_cookies", [])
+        auth_handler_type = AuthHandlerType.from_string(auth_kwargs.get("handler", "general"))
+        auth_url = auth_kwargs.get("auth_url", None)
+        successful_login_url = auth_kwargs.get("successful_login_url", "**/edu")
+        auth_config = {
+            "auth_url": auth_url,
+            "successful_login_url": successful_login_url,
+        }
+        if auth_handler_type == AuthHandlerType.HANDSHAKE:
+            auth_handler = HandshakeAuthHandler(**auth_config)
+        elif auth_handler_type == AuthHandlerType.NONE:
+            auth_handler = NoAuthHandler()
+        else:
+            auth_handler = GeneralAuthHandler(**auth_config)
+        
+        # Navigator config
         run_headless = kwargs.get('headless', True)
         reuse_context = kwargs.get('reuse_context', True)
-
-        kwargs["successful_login_url"] = kwargs.get("successful_login_url", "**/edu")
-
-        auth_handler_type = AuthHandlerType.from_string(kwargs.get("auth_handler", "general"))
-        if auth_handler_type == AuthHandlerType.HANDSHAKE:
-            auth_handler = HandshakeAuthHandler(**kwargs)
-        elif auth_handler_type == AuthHandlerType.NONE:
-            auth_handler = NoAuthHandler(**kwargs)
-        else:
-            auth_handler = GeneralAuthHandler(**kwargs)
         user_data_directory = kwargs.get("user_data_directory", "./user_data")
 
         self._context = ExtractorContext(
