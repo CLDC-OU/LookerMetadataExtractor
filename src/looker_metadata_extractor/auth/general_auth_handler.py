@@ -10,6 +10,8 @@ class GeneralAuthHandler(AuthHandler):
     General authentication handler that simply waits for manual authentication
     """
 
+    MANUAL_LOGIN_TIMEOUT_MS = 120_000  # 2 minutes
+
     def __init__(self, **kwargs):
         auth_url = kwargs.get('auth_url')
         if not isinstance(auth_url, str):
@@ -22,11 +24,9 @@ class GeneralAuthHandler(AuthHandler):
         self._successful_login_url = successful_login_url
 
     def authenticate(self, context: BrowserContext):
-        logger.info(f"Waiting for authentication... ({self.auth_url})")
-
         page = context.new_page()
         page.goto(f"{self.auth_url}")
         logger.info(f"Please authenticate in the opened browser window...")
-        page.wait_for_url(self._successful_login_url, timeout=120_000)  # Wait up to 2 minutes for manual login
+        page.wait_for_url(self._successful_login_url, timeout=self.MANUAL_LOGIN_TIMEOUT_MS)
         logger.info(f"Successfully authenticated")
         page.close()
