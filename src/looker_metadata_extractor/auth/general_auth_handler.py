@@ -1,5 +1,5 @@
 from __future__ import annotations
-from playwright.sync_api import BrowserContext
+from playwright.sync_api import BrowserContext, Page
 
 from looker_metadata_extractor.auth.auth_handler import AuthHandler
 from looker_metadata_extractor.utils.logger import logger
@@ -23,10 +23,10 @@ class GeneralAuthHandler(AuthHandler):
             raise ValueError("Missing or invalid required argument `successful_login_url`")
         self._successful_login_url = successful_login_url
 
-    def authenticate(self, context: BrowserContext):
+    def authenticate(self, context: BrowserContext) -> Page:
         page = context.new_page()
         page.goto(f"{self.auth_url}")
         logger.info(f"Please authenticate in the opened browser window...")
         page.wait_for_url(self._successful_login_url, timeout=self.MANUAL_LOGIN_TIMEOUT_MS)
         logger.info(f"Successfully authenticated")
-        page.close()
+        return page

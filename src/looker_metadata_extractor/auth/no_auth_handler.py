@@ -1,4 +1,6 @@
 from __future__ import annotations
+from playwright.sync_api import BrowserContext, Page
+
 from looker_metadata_extractor.auth.auth_handler import AuthHandler
 
 class NoAuthHandler(AuthHandler):
@@ -10,5 +12,5 @@ class NoAuthHandler(AuthHandler):
     def __init__(self, **kwargs):
         pass
 
-    def authenticate(self, context):
-        pass
+    def authenticate(self, context: BrowserContext) -> Page:
+        return context.new_page()

@@ -84,8 +84,9 @@ class HandshakeNavigator(Navigator):
                     return
 
         page = self.context.open_page_with_response_handler(url, handle_responses)
+        logger.info(f"Waiting for navigation to URL: {url}. Current URL: {page.url}")
         try:
-            page.wait_for_url(url)
+            page.wait_for_url(url, timeout=custom_timeout if custom_timeout is not None else self.extract_timeout)
             logger.info(f"Successfully navigated to: {url}")
         except Exception:
             logger.warning(f"Timeout waiting for navigation to URL: {url}. Current URL: {page.url}")

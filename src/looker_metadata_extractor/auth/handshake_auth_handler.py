@@ -3,7 +3,7 @@ from fnmatch import fnmatch
 import os
 import time
 import random
-from playwright.sync_api import BrowserContext, TimeoutError as PlaywrightTimeoutError
+from playwright.sync_api import BrowserContext, TimeoutError as PlaywrightTimeoutError, Page
 
 from looker_metadata_extractor.auth.auth_handler import AuthHandler
 from looker_metadata_extractor.utils.logger import logger
@@ -34,7 +34,7 @@ class HandshakeAuthHandler(AuthHandler):
             raise ValueError("Missing or invalid required argument `successful_login_url`")
         self._successful_login_url = successful_login_url
 
-    def authenticate(self, context: BrowserContext):
+    def authenticate(self, context: BrowserContext) -> Page:
         if not os.getenv('LOOKER_METADATA_EXTRACTOR_AUTH_USERNAME'):
             raise ValueError("Missing required environment variable `LOOKER_METADATA_EXTRACTOR_AUTH_USERNAME`")
         if not os.getenv('LOOKER_METADATA_EXTRACTOR_AUTH_PASSWORD'):
@@ -57,38 +57,34 @@ class HandshakeAuthHandler(AuthHandler):
         def _terminate_successfully_if_logged_in():
             if logged_in["value"] or self._url_matches_success(page.url):
                 logger.info("Detected successful login URL - terminating authentication successfully.")
-                try:
-                    page.close()
-                except Exception:
-                    pass
                 HandshakeAuthHandler._random_wait(500, 1500)
-                return True
+                return page
             return False
 
         logger.info(f"Logging in to Handshake... ({self.auth_url})")
         page.goto(self.auth_url)
         if _terminate_successfully_if_logged_in():
-            return
+            return page
         
         HandshakeAuthHandler._random_wait()
         logger.info("Waiting for login button...")
         self._wait_for_selector_interruptible(page, self._login_button_selector, _terminate_successfully_if_logged_in)
         if _terminate_successfully_if_logged_in():
-            return
+            return page
         page.click(self._login_button_selector)
         logger.info("Login button clicked")
         if _terminate_successfully_if_logged_in():
-            return
+            return page
 
         # ===== Username =====
         logger.info("Waiting for username input...")
         self._wait_for_selector_interruptible(page, self._username_input_selector, _terminate_successfully_if_logged_in)
         if _terminate_successfully_if_logged_in():
-            return
+            return page
         
         HandshakeAuthHandler._random_wait(1000, 2000)
         if _terminate_successfully_if_logged_in():
-            return
+            return page
         
         username = os.getenv('LOOKER_METADATA_EXTRACTOR_AUTH_USERNAME')
         if username is None:
@@ -97,38 +93,38 @@ class HandshakeAuthHandler(AuthHandler):
         username = None
         logger.info("Username input filled")
         if _terminate_successfully_if_logged_in():
-            return
+            return page
 
         HandshakeAuthHandler._random_wait()
         if _terminate_successfully_if_logged_in():
-            return
+            return page
         page.press(self._username_input_selector, "Enter")
         logger.info("Username submitted")
         if _terminate_successfully_if_logged_in():
-            return
+            return page
 
         # Wait for the (second) login button to appear because Handshake is silly and requires an extra click (for no reason)
         logger.info("Waiting for second login button...")
         self._wait_for_selector_interruptible(page, self._login_2_button_selector, _terminate_successfully_if_logged_in)
         if _terminate_successfully_if_logged_in():
-            return
+            return page
         HandshakeAuthHandler._random_wait()
         if _terminate_successfully_if_logged_in():
-            return
+            return page
         page.click(self._login_2_button_selector)
         logger.info("Second login button clicked")
         if _terminate_successfully_if_logged_in():
-            return
+            return page
 
         # ===== Password =====
         logger.info("Waiting for password input...")
         self._wait_for_selector_interruptible(page, self._password_input_selector, _terminate_successfully_if_logged_in)
         if _terminate_successfully_if_logged_in():
-            return
+            return page
         
         HandshakeAuthHandler._random_wait(1000, 2000)
         if _terminate_successfully_if_logged_in():
-            return
+            return page
 
         password = os.getenv('LOOKER_METADATA_EXTRACTOR_AUTH_PASSWORD')
         if password is None:
@@ -140,24 +136,24 @@ class HandshakeAuthHandler(AuthHandler):
         password = None
         logger.info("Password input filled")
         if _terminate_successfully_if_logged_in():
-            return
+            return page
         HandshakeAuthHandler._random_wait()
         if _terminate_successfully_if_logged_in():
-            return
+            return page
 
         logger.info("Submitting password...")
         page.keyboard.press("Enter")
         logger.info("Password submitted")
         if _terminate_successfully_if_logged_in():
-            return
+            return page
 
         logger.info(f"Waiting for successful login... Current URL: {page.url}")
         self._wait_for_url_interruptible(page, self._successful_login_url, _terminate_successfully_if_logged_in)
         if _terminate_successfully_if_logged_in():
-            return
+            return page
 
         logger.warning("Failed to complete login successfully - closing page")
-        page.close()
+        return page
 
     @staticmethod
     def _random_wait(min_time: int = 100, max_time: int = 1000):

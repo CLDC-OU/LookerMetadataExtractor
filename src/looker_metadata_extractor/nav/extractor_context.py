@@ -111,15 +111,14 @@ class ExtractorContext:
         context = self.context
         if context is None:
             context = self._new_context()
-        if not self.is_authenticated():
+        if not self.is_authenticated() or self.current_page is None:
             try:
                 logger.info("Not authenticated - starting authentication process...")
-                self.auth.authenticate(context)
+                return self.auth.authenticate(context)
             except Exception as e:
                 logger.error(f"Authentication failed: {e}")
                 raise e
-        page = context.new_page()
-        return page
+        return self.current_page
 
     def _get_or_load_authenticated_page(self) -> Page:
         if not self.reuse_context:

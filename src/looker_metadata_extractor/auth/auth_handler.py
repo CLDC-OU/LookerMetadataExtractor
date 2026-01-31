@@ -1,5 +1,5 @@
 from __future__ import annotations
-from playwright.sync_api import BrowserContext
+from playwright.sync_api import BrowserContext, Page
 from enum import Enum
 
 class AuthHandlerType(Enum):
@@ -22,5 +22,5 @@ class AuthHandler:
     def __init__(self, **kwargs):
         raise NotImplementedError
 
-    def authenticate(self, context: BrowserContext):
+    def authenticate(self, context: BrowserContext) -> Page:
         raise NotImplementedError
