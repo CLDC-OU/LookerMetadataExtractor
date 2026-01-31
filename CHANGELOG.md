@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.1 (2026-01-31)
+
+```diff
+    | Fixed config being defaulted to blank when unset
++   | Added explicit page return on authentication rather than creating a new page after authentication
+    | Fixed pages not being checked for successful navigation in handshake navigator
+```
+
 ## 1.1.0 (2026-01-30)
 
 ```diff
