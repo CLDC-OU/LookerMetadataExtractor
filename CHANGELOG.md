@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.2 (2026-01-31)
+
+```diff
++   | Added timezone, language, and accept_language configuration options to context
+```
+
 ## 1.1.1 (2026-01-31)
 
 ```diff
