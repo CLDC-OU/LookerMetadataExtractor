@@ -17,8 +17,8 @@ class HandshakeNavigator(Navigator):
     """
 
     def __init__(self, **kwargs):
-        auth_kwargs = kwargs.get("auth", {})
-        context_kwargs = kwargs.get("context", {})
+        auth_kwargs = kwargs.get("auth")
+        context_kwargs = kwargs.get("context")
 
         if not auth_kwargs:
             raise ValueError("Missing required argument `auth`")
