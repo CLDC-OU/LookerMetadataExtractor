@@ -4,6 +4,9 @@ kwargs = {
     "type": "handshake",
     "context": {
         "headless": False,
+        "timezone": "America/New_York",
+        "language": "en-US",
+        "accept_language": "en-US,en;q=0.9",
         "reuse_context": True,
         "user_data_directory": "./user_data",
         "cookie_url": "https://school.joinhandshake.com",

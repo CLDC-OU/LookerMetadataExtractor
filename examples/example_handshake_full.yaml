@@ -1,8 +1,11 @@
 type: handshake
 context:
   headless: False
-  reuse_context: True
   extract_timeout: 30000
+  timezone: America/New_York
+  language: en-US
+  accept_language: en-US,en;q=0.9
+  reuse_context: True
   user_data_directory: /path/to/user/data/dir
   cookie_url: https://school.joinhandshake.com
   required_cookies:

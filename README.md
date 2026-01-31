@@ -99,6 +99,9 @@ Context is configured under the `context` key in the main configuration and incl
 - `headless`: Whether to run the browser in headless mode (headless = no UI) - this may introduce issues with automation detection on some sites
 - `cookie_url`: The URL cookies are stored under
 - (optional) `required_cookies`: A list of cookies required for the application to consider the session as being authenticated (typically a session id or similar. Anything that doesn't exist when not authenticated and does exist when authenticated). This can be left empty to skip cookie checking
+- (recommended) `timezone`: The timezone to set for the browser context (use the TZ identifier from https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). Defaults to "Etc/UTC"
+- (optional) `language`: The language/locale to set for the browser context (find locale codes and ISO 639 language tags on https://simplelocalize.io/data/). Defaults to "en-US"
+- (optional) `accept_language`: The Accept-Language header to set for the browser context. Defaults to "en-US,en;q=0.9"
 - (optional) `reuse_context`: Whether to reuse the browser context (saves context between sessions in the `user_data_directory` directory)
 - (optional) `user_data_directory`: The directory to store user data (cookies, local storage, etc.) when `reuse_context` is enabled
 - (optional) `extract_timeout`: The base timeout (in milliseconds) for extraction operations. Can be overridden per-extractor

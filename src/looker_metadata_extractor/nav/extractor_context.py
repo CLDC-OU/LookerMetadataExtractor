@@ -20,6 +20,11 @@ class ExtractorContext:
         self.headless = kwargs.get("headless", True)
         self.reuse_context = kwargs.get("reuse_context", False)
         self.user_data_directory = kwargs.get("user_data_directory")
+        
+        self.timezone = kwargs.get("timezone", "Etc/UTC")
+        self.language = kwargs.get("language", "en-US")
+        self.accept_language = kwargs.get("accept_language", "en-US,en;q=0.9")
+        
         if self.reuse_context and not self.user_data_directory:
             raise ValueError("User data directory must be specified when reuse_context is True")
         
@@ -97,11 +102,23 @@ class ExtractorContext:
         if self.reuse_context:
             if not self.user_data_directory:
                 raise ValueError("User data directory must be specified when reuse_context is True")
-            self._context = Stealth().use_sync(sync_playwright()).manager.start().chromium.launch_persistent_context(user_data_dir=self.user_data_directory, headless=self.headless, user_agent=user_agent)
+            self._context = Stealth().use_sync(sync_playwright()).manager.start().chromium.launch_persistent_context(
+                user_data_dir=self.user_data_directory, 
+                headless=self.headless, 
+                user_agent=user_agent,
+                timezone_id=self.timezone,
+                locale=self.language,
+                extra_http_headers={"Accept-Language": self.accept_language}
+            )
         else:
             browser = Stealth().use_sync(sync_playwright()).manager.start().chromium.launch(headless=self.headless)
             logger.info("Creating new browser context...")
-            self._context = browser.new_context(user_agent=user_agent)
+            self._context = browser.new_context(
+                user_agent=user_agent,
+                timezone_id=self.timezone,
+                locale=self.language,
+                extra_http_headers={"Accept-Language": self.accept_language}
+            )
         logger.info(f"Injecting context modifications for {len(self.injectors)} injectors...")
         for injector in self.injectors:
             injector.inject(self._context)
