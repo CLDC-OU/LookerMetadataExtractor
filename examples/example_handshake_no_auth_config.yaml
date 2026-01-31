@@ -1,9 +1,11 @@
 type: handshake
-auth:
-  handler: none
+context:
+  headless: False
   cookie_url: https://school.joinhandshake.com
   required_cookies:
     - session_id
+auth:
+  handler: none
 extractors:
   - url: https://school.joinhandshake.com/edu/analytics/reports/12345
     extracts:

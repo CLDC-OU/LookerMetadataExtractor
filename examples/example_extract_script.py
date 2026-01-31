@@ -2,17 +2,19 @@ from looker_metadata_extractor.looker_metadata_extractor import LookerMetadataEx
 
 kwargs = {
     "type": "handshake",
-    "headless": False,
-    "reuse_context": True,
-    "user_data_directory": "./user_data",
+    "context": {
+        "headless": False,
+        "reuse_context": True,
+        "user_data_directory": "./user_data",
+        "cookie_url": "https://school.joinhandshake.com",
+        "required_cookies": ["session_id"],
+    },
     "auth": {
         "handler": "general",
         "auth_url": "https://school.joinhandshake.com/login",
         "successful_login_url": "**/edu",
-        "cookie_url": "https://school.joinhandshake.com",
-        "required_cookies": ["session_id"],
-    },    
-    "timeout": 30_000,
+    },
+    "extract_timeout": 30_000,
     "extractors": [
         {
             "metadata_download_directory": "./metadata",

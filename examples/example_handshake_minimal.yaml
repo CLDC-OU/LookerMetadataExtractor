@@ -1,10 +1,12 @@
 type: handshake
-auth:
-  auth_url: https://school.joinhandshake.com/login
-  successful_login_url: "**/edu"
+context:
+  headless: False
   cookie_url: https://school.joinhandshake.com
   required_cookies:
     - session_id
+auth:
+  auth_url: https://school.joinhandshake.com/login
+  successful_login_url: "**/edu"
 extractors:
   - url: https://school.joinhandshake.com/edu/analytics/reports/12345
     extracts:
