@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.1.0 (2026-01-30)
+
+```diff
+    | Fixed handshake auth handler not being able to fill password fields
++   | Added context injector support
++   | Added FlareSolverr injector
++   | Added playwright stealth support
++   | Added a whole bunch of logging
++   | Added timeout configuration options and overrides
+    | Restructured config into individual sections for context, auth, extractors, etc.
+```
+
 ## 1.0.4 (2026-01-28)
 
 ```diff
