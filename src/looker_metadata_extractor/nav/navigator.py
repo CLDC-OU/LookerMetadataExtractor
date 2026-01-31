@@ -33,7 +33,7 @@ class Navigator:
     def context(self) -> ExtractorContext:
         return self._context
     @property
-    def timeout(self) -> int:
+    def extract_timeout(self) -> int:
         return self._timeout
 
     def set_context(self, context: ExtractorContext):

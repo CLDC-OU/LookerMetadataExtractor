@@ -17,50 +17,33 @@ class HandshakeNavigator(Navigator):
     """
 
     def __init__(self, **kwargs):
-        # Auth config
         auth_kwargs = kwargs.get("auth", {})
-        auth_config = {}
+        context_kwargs = kwargs.get("context", {})
+
         if not auth_kwargs:
             raise ValueError("Missing required argument `auth`")
-        cookie_url = auth_kwargs.get("cookie_url")
-        if not cookie_url:
-            raise ValueError("Missing required argument `cookie_url` in `auth`")
-        required_cookies = auth_kwargs.get("required_cookies", [])
+        if not context_kwargs:
+            raise ValueError("Missing required argument `context`")
+        if not context_kwargs.get("cookie_url"):
+            raise ValueError("Missing required argument `cookie_url` in `context`")
+        
         auth_handler_type = AuthHandlerType.from_string(auth_kwargs.get("handler", "general"))
-        auth_url = auth_kwargs.get("auth_url", None)
-        successful_login_url = auth_kwargs.get("successful_login_url", "**/edu")
-        auth_config = {
-            "auth_url": auth_url,
-            "successful_login_url": successful_login_url,
-        }
         if auth_handler_type == AuthHandlerType.HANDSHAKE:
-            auth_handler = HandshakeAuthHandler(**auth_config)
+            auth_handler = HandshakeAuthHandler(**auth_kwargs)
         elif auth_handler_type == AuthHandlerType.NONE:
             auth_handler = NoAuthHandler()
         else:
-            auth_handler = GeneralAuthHandler(**auth_config)
-        
-        # Navigator config
-        run_headless = kwargs.get('headless', True)
-        reuse_context = kwargs.get('reuse_context', True)
-        user_data_directory = kwargs.get("user_data_directory", "./user_data")
+            auth_handler = GeneralAuthHandler(**auth_kwargs)
 
-        self._context = ExtractorContext(
-            auth=auth_handler, 
-            cookie_url=cookie_url, 
-            required_cookies=required_cookies,
-            run_headless=run_headless,
-            reuse_context=reuse_context,
-            user_data_directory=user_data_directory
-        )
-        self._timeout = kwargs.get("timeout", HandshakeNavigator.DEFAULT_TIMEOUT_MS)
+        self._context = ExtractorContext(auth=auth_handler, **context_kwargs)
+        self._extract_timeout = kwargs.get("extract_timeout", HandshakeNavigator.DEFAULT_TIMEOUT_MS)
 
     @property
     def context(self) -> ExtractorContext:
         return self._context
     @property
-    def timeout(self) -> int:
-        return self._timeout
+    def extract_timeout(self) -> int:
+        return self._extract_timeout
 
     def set_context(self, context: ExtractorContext):
         self._context = context
@@ -106,7 +89,7 @@ class HandshakeNavigator(Navigator):
 
         def wait_for_extractions_to_load():
             # Wait for all status to be updated to "success" or "failed"
-            timeout = custom_timeout if custom_timeout is not None else self.timeout
+            timeout = custom_timeout if custom_timeout is not None else self.extract_timeout
             start_time = page.evaluate("performance.now()")
             while not all(extract.status in ["success", "failed"] for extract in extracts) and (page.evaluate("performance.now()") - start_time) < timeout:
                 page.wait_for_timeout(HandshakeNavigator.POLLING_INTERVAL_MS)
