@@ -40,7 +40,7 @@ class HandshakeAuthHandler(AuthHandler):
         if not os.getenv('LOOKER_METADATA_EXTRACTOR_AUTH_PASSWORD'):
             raise ValueError("Missing required environment variable `LOOKER_METADATA_EXTRACTOR_AUTH_PASSWORD`")
 
-        logger.info(f"Logging in to Handshake... ({self.auth_url})")
+        logger.info("Starting Handshake authentication handler...")
 
         page = context.new_page()
         logged_in = {"value": False}
@@ -65,7 +65,8 @@ class HandshakeAuthHandler(AuthHandler):
                 return True
             return False
 
-        page.goto(f"{self.auth_url}")
+        logger.info(f"Logging in to Handshake... ({self.auth_url})")
+        page.goto(self.auth_url)
         if _terminate_successfully_if_logged_in():
             return
         
@@ -78,9 +79,8 @@ class HandshakeAuthHandler(AuthHandler):
         logger.info("Login button clicked")
         if _terminate_successfully_if_logged_in():
             return
-        
 
-        # Insert username
+        # ===== Username =====
         logger.info("Waiting for username input...")
         self._wait_for_selector_interruptible(page, self._username_input_selector, _terminate_successfully_if_logged_in)
         if _terminate_successfully_if_logged_in():
@@ -120,7 +120,7 @@ class HandshakeAuthHandler(AuthHandler):
         if _terminate_successfully_if_logged_in():
             return
 
-        # Insert password
+        # ===== Password =====
         logger.info("Waiting for password input...")
         self._wait_for_selector_interruptible(page, self._password_input_selector, _terminate_successfully_if_logged_in)
         if _terminate_successfully_if_logged_in():
