@@ -11,19 +11,22 @@ class ExtractorContext:
     Holds the context for the extractor, including authentication and browser instance
     """
 
-    def __init__(self, auth: AuthHandler, cookie_url: str, required_cookies: list[str], run_headless: bool, reuse_context: bool, user_data_directory: str):
+    def __init__(self, auth: AuthHandler, **kwargs):
         self.auth = auth
-        self.cookie_url = cookie_url
-        self.required_cookies = required_cookies
+        self.cookie_url = kwargs.get("cookie_url")
+        self.required_cookies = kwargs.get("required_cookies", [])
+        self.headless = kwargs.get("headless", True)
+        self.reuse_context = kwargs.get("reuse_context", False)
+        self.user_data_directory = kwargs.get("user_data_directory")
+        if self.reuse_context and not self.user_data_directory:
+            raise ValueError("User data directory must be specified when reuse_context is True")
         self.current_page = None
-        self.run_headless = run_headless
-        self.reuse_context = reuse_context
-        self.context = None
-        self.user_data_directory = user_data_directory
+        self._context = None
 
-    def _get_context(self) -> BrowserContext | None:
-        if self.context:
-            return self.context
+    @property
+    def context(self) -> BrowserContext | None:
+        if self._context:
+            return self._context
         return None
 
     def _new_context(self) -> BrowserContext:
@@ -42,10 +45,10 @@ class ExtractorContext:
         if self.context:
             logger.info("Closing browser instance...")
             self.context.close()
-            self.context = None
+            self._context = None
 
     def is_authenticated(self) -> bool:
-        context = self._get_context()
+        context = self.context
         if context is None:
             return False
         cookies = context.cookies(self.cookie_url)
@@ -60,7 +63,7 @@ class ExtractorContext:
 
     def open_page_with_response_handler(self, url: str, response_handler: Callable):
         page = self._get_or_load_authenticated_page()
-        if not self._get_context():
+        if not self.context:
             raise ValueError("No browser context available")
         page.on("response", response_handler)
         logger.info(f"Opening page with response handler: {url}")
@@ -69,7 +72,7 @@ class ExtractorContext:
         return page
 
     def _get_authenticated_page(self) -> Page:
-        context = self._get_context()
+        context = self.context
         if context is None:
             context = self._new_context()
         if not self.is_authenticated():
