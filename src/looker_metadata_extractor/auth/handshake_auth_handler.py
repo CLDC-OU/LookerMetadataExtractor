@@ -151,8 +151,8 @@ class HandshakeAuthHandler(AuthHandler):
         if _terminate_successfully_if_logged_in():
             return
 
-        logger.info("Waiting for successful login...")
-        self._wait_for_url_interruptible(page, "**/edu", _terminate_successfully_if_logged_in)
+        logger.info(f"Waiting for successful login... Current URL: {page.url}")
+        self._wait_for_url_interruptible(page, self._successful_login_url, _terminate_successfully_if_logged_in)
         if _terminate_successfully_if_logged_in():
             return
 
